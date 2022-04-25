@@ -22,6 +22,7 @@ def get_host_ip():
 
 def fetch_domain(domain_host, biz_date):
     url = "{0}/local/data/ins/domain/fetch?bizDate={1}".format(domain_host, biz_date)
+    print('fetch_domain_url',url)
     result = req.req_session().get(url)
     return result
 
@@ -84,9 +85,12 @@ if __name__ == '__main__':
         while True:
             host_ip = get_host_ip()
             domain_host = 'http://' + host_ip + ':48888';
+            print('domain_host',domain_host)
             biz_date = time.strftime("%Y-%m-%d", time.localtime())
             # 获取执行的tag
+            print('正在获取可执行的tag....')
             domain_data = fetch_domain(domain_host, biz_date)
+            print('获取到tag数据',domain_data)
             if domain_data.text is not None:
                 domain_lst = list(domain_data.text.split(','))
                 shell = domain_lst[0]
