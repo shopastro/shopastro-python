@@ -91,7 +91,9 @@ def proxy_list():
             send_request()
 
         with open('../usable_ips.txt', 'r') as ip_file:
-            ip_lst.extend(ip_file.read().split('\n'))
+            flag = test_ip(ip_file.read().split('\n'))
+            if flag:
+                ip_lst.extend(ip_file.read().split('\n'))
 
         return ip_lst
 
