@@ -23,14 +23,14 @@ def get_host_ip():
 def fetch_domain(domain_host, biz_date):
     url = "{0}/local/data/ins/domain/fetch?bizDate={1}".format(domain_host, biz_date)
     print('fetch_domain_url',url)
-    result = req.req_session().get(url)
+    result = req.req_session().get(url,timeout=10)
     return result
 
 
 def data_file_exist(domain_host, domain, data_type, biz_date):
     url = "{0}/local/data/ins/file/exists?domain={1}&dataType={2}&bizDate={3}".format(domain_host, domain, data_type,
                                                                                       biz_date)
-    result = req.req_session().get(url)
+    result = req.req_session().get(url,timeout=10)
     return result
 
 
