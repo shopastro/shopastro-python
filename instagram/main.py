@@ -29,7 +29,8 @@ def fetch_domain(domain_host, biz_date):
 
 def data_file_exist(domain_host, domain, data_type, biz_date):
     url = "{0}/local/data/ins/file/exists?domain={1}&dataType={2}&bizDate={3}".format(domain_host, domain, data_type,
-                                                                                      biz_date)
+                                                      biz_date)
+    print('file_exist_url',url)
     result = req.req_session().get(url,timeout=10)
     return result
 
@@ -38,7 +39,8 @@ def upload_s3_and_update(domain_host, domain, data_base, data_type, biz_date):
     url = "{0}/local/data/ins/s3/upload?domain={1}&&dataBase={2}&&dataType={3}&bizDate={4}".format(domain_host, domain,
                                                                                                    data_base,
                                                                                                    data_type,
-                                                                                                   biz_date)
+                                                                                                    biz_date)
+    print('upload_s3_url', url)
     result = req.req_session().get(url)
     return result
 
