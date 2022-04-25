@@ -3,9 +3,7 @@ import time
 import requests
 import traceback
 import re
-import sys
 import os
-sys.path.append("..")
 from request import RequestConfig as req,cutover_proxy
 from fake_useragent import UserAgent
 

@@ -1,7 +1,5 @@
 import re
 import pickle
-import sys
-sys.path.append("..")
 from datetime import datetime
 from fake_useragent import UserAgent
 from request import RequestConfig as req
