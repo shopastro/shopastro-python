@@ -1,5 +1,7 @@
 import random
 import requests
+import sys
+sys.path.append('../')
 from ip.ip_pond import test_ip,proxy_list
 
 
