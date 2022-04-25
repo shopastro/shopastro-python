@@ -1,11 +1,13 @@
+import sys
+sys.path.append("..")
+
 import ins_login as login
 import ins_tags_data as tags
 import ins_blog_data as blog
 import socket
 import time
-import sys
-sys.path.append("..")
 from request import RequestConfig as req
+
 
 def get_host_ip():
     """
@@ -43,7 +45,7 @@ def upload_s3_and_update(domain_host, domain, data_base, data_type, biz_date):
     return result
 
 
-def user_login(user_name,pass_word):
+def user_login(user_name, pass_word):
     # 循环3次,三次登录都失败,结束流程
     login_result = ''
     for count in range(1, 4):
@@ -62,9 +64,7 @@ def user_login(user_name,pass_word):
         return False
 
 
-
-
-def tori_data(login_status,hash_tag):
+def tori_data(login_status, hash_tag):
     # 判断是否登录成功
     if login_status is True:
         tag_result = tags.access_tag_page(hash_tag)
@@ -74,6 +74,7 @@ def tori_data(login_status,hash_tag):
             print('tag=', hash_tag, '抓取tag数据失败......')
     else:
         pass
+
 
 if __name__ == '__main__':
 
@@ -101,9 +102,9 @@ if __name__ == '__main__':
                     print("LocalFile [%s]Exists Then UploadToS3\n", result.text)
                     upload_s3_and_update(domain_host, domain, data_base, data_type, biz_date)
                 else:
-                    login_status = user_login(user_name,pass_word)
+                    login_status = user_login(user_name, pass_word)
                     if login_status:
-                        tori_data(login_status,domain)
+                        tori_data(login_status, domain)
                     else:
                         break
 
