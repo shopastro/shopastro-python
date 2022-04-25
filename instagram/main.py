@@ -79,6 +79,8 @@ if __name__ == '__main__':
     pass_word = input('请输入密码:\n')
 
     if user_name is not None and pass_word is not None:
+        print('user_name',user_name)
+        print('pass_word',pass_word)
         while True:
             host_ip = get_host_ip()
             domain_host = 'http://' + host_ip + ':48888';
