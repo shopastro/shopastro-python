@@ -1,9 +1,6 @@
-from __init__ import *
 import random
 import requests
-import sys
-sys.path.append("..")
-from ip_pond import test_ip,proxy_list
+from ip.ip_pond import test_ip,proxy_list
 
 
 

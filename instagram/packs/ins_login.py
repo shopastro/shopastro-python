@@ -1,9 +1,8 @@
-from __init__ import *
 import re
 import pickle
 from datetime import datetime
 from fake_useragent import UserAgent
-from request import RequestConfig as req
+from .request import RequestConfig as req
 
 def request_header():
     headers = {

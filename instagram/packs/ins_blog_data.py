@@ -1,10 +1,9 @@
-from __init__ import *
 import time
 import requests
 import traceback
 import re
 import os
-from request import RequestConfig as req,cutover_proxy
+from .request import RequestConfig as req,cutover_proxy
 from fake_useragent import UserAgent
 
 def request_header():

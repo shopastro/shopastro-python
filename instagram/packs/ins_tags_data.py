@@ -1,10 +1,9 @@
-from __init__ import *
 import re
 import traceback
 import time
 import os
 from fake_useragent import UserAgent
-from request import RequestConfig as req,cutover_proxy
+from .request import RequestConfig as req,cutover_proxy
 
 class Form:
 
