@@ -53,7 +53,7 @@ def send_request():
     print('分别有：\n', usable_ip_list)
 
     if len(usable_ip_list)>0:
-        with open('usable_ips.txt','w') as ip_file:
+        with open('../usable_ips.txt','w') as ip_file:
             for ip in usable_ip_list:
                 ip_file.write(str(ip)+'\n')
 
@@ -85,7 +85,7 @@ def test_ip(proxy):
 def proxy_list():
     ip_lst = []
     try:
-        path = pathlib.Path('usable_ips.txt')
+        path = pathlib.Path('../usable_ips.txt')
         flag = path.exists()
         if not flag:
             send_request()
