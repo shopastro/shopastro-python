@@ -1,7 +1,7 @@
-import ins_login as login
-import ins_tags_data as tags
-import ins_blog_data as blog
-from request import RequestConfig as req,cutover_proxy
+import packs.ins_login as login
+import packs.ins_tags_data as tags
+import packs.ins_blog_data as blog
+from packs.request import RequestConfig as req
 import socket
 import time
 

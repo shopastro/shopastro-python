@@ -1,5 +1,3 @@
-import sys
-import os
 import random
 import requests
 from ip.ip_pond import test_ip,proxy_list
