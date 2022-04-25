@@ -1,18 +1,8 @@
-import os
-import sys
-
-PROJECT_ROOT = os.path.abspath(os.path.join(
-                  os.path.dirname(__file__),
-                  os.pardir)
-)
-
-# print(sys.path)
-sys.path.append(PROJECT_ROOT)
-# print(sys.path)
-from datetime import datetime
-import requests
 import re
 import pickle
+import sys
+sys.path.append("..")
+from datetime import datetime
 from fake_useragent import UserAgent
 from request import RequestConfig as req
 

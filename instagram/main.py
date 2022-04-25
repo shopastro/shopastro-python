@@ -1,9 +1,11 @@
-import packs.ins_login as login
-import packs.ins_tags_data as tags
-import packs.ins_blog_data as blog
-from packs.request import RequestConfig as req
+import ins_login as login
+import ins_tags_data as tags
+import ins_blog_data as blog
 import socket
 import time
+import sys
+sys.path.append("..")
+from request import RequestConfig as req
 
 def get_host_ip():
     """

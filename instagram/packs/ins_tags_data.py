@@ -1,13 +1,11 @@
-import random
-
-
 import re
-from fake_useragent import UserAgent
 import traceback
 import time
-from request import RequestConfig as req,cutover_proxy
 import os
-from ip_pond import test_ip,proxy_list
+import sys
+sys.path.append("..")
+from fake_useragent import UserAgent
+from request import RequestConfig as req,cutover_proxy
 
 class Form:
 
