@@ -53,6 +53,7 @@ class Form:
     @property
     def items(self):
         cc = self.cookie()
+        print('cc',cc)
         return (cc['csrftoken'], re.sub("': '", "=", str(cc)[2:-2]).replace("', '", "; "))
 
 
