@@ -1,3 +1,4 @@
+from __init__ import *
 import random
 import requests
 import sys

@@ -1,3 +1,4 @@
+from __init__ import *
 import re
 import traceback
 import time
