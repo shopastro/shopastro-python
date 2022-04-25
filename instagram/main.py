@@ -1,11 +1,9 @@
 import requests
-
 import packs.ins_login as login
 import packs.ins_tags_data as tags
 import packs.ins_blog_data as blog
 import socket
 import time
-from packs.request import RequestConfig as req
 
 
 def get_host_ip():
@@ -25,7 +23,7 @@ def get_host_ip():
 def fetch_domain(domain_host, biz_date):
     url = "{0}/local/data/ins/domain/fetch?bizDate={1}".format(domain_host, biz_date)
     print('fetch_domain_url',url)
-    result = requests.get(url,timeout=10)
+    result = requests.get(url,timeout=20)
     return result
 
 
@@ -33,7 +31,7 @@ def data_file_exist(domain_host, domain, data_type, biz_date):
     url = "{0}/local/data/ins/file/exists?domain={1}&dataType={2}&bizDate={3}".format(domain_host, domain, data_type,
                                                       biz_date)
     print('file_exist_url',url)
-    result = requests.get(url,timeout=10)
+    result = requests.get(url,timeout=20)
     return result
 
 
@@ -95,7 +93,7 @@ if __name__ == '__main__':
             print('正在获取可执行的tag....')
             domain_data = fetch_domain(domain_host, biz_date)
             print('获取到tag数据',domain_data)
-            if domain_data.text is not None:
+            if domain_data.text is not None and domain_data.text != '':
                 domain_lst = list(domain_data.text.split(','))
                 shell = domain_lst[0]
                 domain = domain_lst[1]

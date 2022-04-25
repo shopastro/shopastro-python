@@ -1,3 +1,4 @@
+import os
 import pathlib
 import random
 import traceback
@@ -24,7 +25,6 @@ usable_ip_list = []  # 用于存放通过检测ip后是否可以使用
 
 # 发送请求，获得响应
 def send_request():
-
     # 爬取7页，可自行修改
     for i in range(1, 11):
         print(f'正在抓取第{i}页……')
@@ -52,10 +52,11 @@ def send_request():
     print(f'可以使用的ip个数为：{len(usable_ip_list)}')
     print('分别有：\n', usable_ip_list)
 
-    if len(usable_ip_list)>0:
-        with open('../usable_ips.txt','w') as ip_file:
+    if len(usable_ip_list) > 0:
+        with open('../usable_ips.txt', 'w') as ip_file:
             for ip in usable_ip_list:
-                ip_file.write(str(ip)+'\n')
+                ip_file.write(str(ip) + '\n')
+
 
 # 检测ip是否可以使用
 def test_ip(proxy):
@@ -89,16 +90,15 @@ def proxy_list():
         flag = path.exists()
         if not flag:
             send_request()
-
-        with open('../usable_ips.txt', 'r') as ip_file:
-            flag = test_ip(ip_file.read().split('\n'))
-            if flag:
+            return usable_ip_list
+        else:
+            with open("../usable_ips.txt",'r') as ip_file:
                 ip_lst.extend(ip_file.read().split('\n'))
-
         return ip_lst
 
     except Exception:
         print('file read Exception', traceback.print_exc())
 
+
 if __name__ == '__main__':
-     print(random.choice(proxy_list()))
+    print(random.choice(proxy_list()))
