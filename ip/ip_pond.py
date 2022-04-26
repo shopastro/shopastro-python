@@ -72,6 +72,9 @@ def test_ip(proxy):
             "User-Agent": "Mozilla/5.0 (X11; Linux armv8l; rv:78.0) Gecko/20100101 Firefox/78.0"}, proxies=proxies,
                                 timeout=5)  # 设置timeout，使响应等待1s
         response.close()
+        # 休眠2秒后继续验证
+        time.sleep(2)
+
         if response.status_code == 200:
             usable_ip_list.append(proxy)
             print(proxy, '\033[31m可用\033[0m')
@@ -80,8 +83,7 @@ def test_ip(proxy):
             print('response', response.status_code)
             print(proxy, '不可用')
             return False
-        # 休眠2秒后继续验证
-        time.sleep(2)
+
     except Exception as e:
         print(e)
         print(proxy, '请求异常')
