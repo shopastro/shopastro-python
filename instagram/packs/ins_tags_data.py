@@ -3,8 +3,7 @@ import traceback
 import time
 import os
 from fake_useragent import UserAgent
-from .request import cutover_proxy, proxies
-import requests
+from .request import RequestConfig as reqc, cutover_proxy
 
 
 class Form:
@@ -42,11 +41,12 @@ class Request:
         self.cookies = cookies
 
     def get_sections(self, form):
-        return requests.post(f'https://i.instagram.com/api/v1/tags/{self.tag}/sections/', headers=self.headers,
-                             data=form.data, cookies=self.cookies, proxies=proxies, timeout=30)
+        return reqc.req_session().post(f'https://i.instagram.com/api/v1/tags/{self.tag}/sections/',
+                                       headers=self.headers,
+                                       data=form.data, cookies=self.cookies, timeout=30)
 
     def get_tag_page(self, url):
-        return requests.get(f'{url}' + self.tag + '/', headers=self.headers, cookies=self.cookies, proxies=proxies)
+        return reqc.req_session().get(f'{url}' + self.tag + '/', headers=self.headers, cookies=self.cookies)
 
 
 def request_header():
@@ -115,20 +115,24 @@ def access_tag_page(tag, url="https://www.instagram.com/explore/tags/"):
                 cutover_proxy()  # 切换新的ip爬取数据
                 time.sleep(60)
 
-            if 'data' in result:
-                section_data = result.get('data')
-                next_max_id = section_data.get('next_max_id')
-                next_page = section_data.get('next_page')
-                next_media_ids = str(list(map(int, section_data.get('next_media_ids'))))
-                blog_url_list = section_data.get('blog_url_list')
-                sections = section_data.get('sections')
-                all_blog_url_list.extend(blog_url_list)
-                print(all_blog_url_list)
-                if sections == []:  # sections 为[] 代表翻页到底了
+                try:
+                    if 'data' in result:
+                        section_data = result.get('data')
+                        next_max_id = section_data.get('next_max_id')
+                        next_page = section_data.get('next_page')
+                        next_media_ids = str(list(map(int, section_data.get('next_media_ids'))))
+                        blog_url_list = section_data.get('blog_url_list')
+                        sections = section_data.get('sections')
+                        all_blog_url_list.extend(blog_url_list)
+                        print(all_blog_url_list)
+                        if sections == []:  # sections 为[] 代表翻页到底了
+                            break
+                    else:
+                        print(result)
+                except Exception:
+                    print('exception', traceback.print_exc())
                     break
-            else:
-                print(result)
-                break
+
         else:
             print('循环获取section data 结束.....')
 
@@ -185,8 +189,10 @@ def cycle_get_section_data(request, form):
 
             except:
                 print('json parse exception:', traceback.print_exc())
+                print('切换新的ip,休眠60秒后执行....')
                 # 切换可用的新IP
                 cutover_proxy()
+                time.sleep(60)
                 return dict({})
 
         else:
@@ -197,8 +203,10 @@ def cycle_get_section_data(request, form):
             })
     except:
         print('ssl exception:', traceback.print_exc())
+        print('切换新的ip,休眠60秒后执行....')
         # 切换可用的新IP
         cutover_proxy()
+        time.sleep(60)
         return dict({})
 
 

@@ -1,4 +1,3 @@
-import os
 import pathlib
 import random
 import traceback
@@ -20,12 +19,12 @@ def request_header():
 '''
 创建两个列表用来存放代理ip
 '''
-all_ip_list = []  # 用于存放从网站上抓取到的ip
-usable_ip_list = []  # 用于存放通过检测ip后是否可以使用
 
 
 # 发送请求，获得响应
-def send_request():
+def get_kuaidaili_open_ip():
+    all_ip_list = []  # 用于存放从网站上抓取到的ip
+    usable_ip_list = []  # 用于存放通过检测ip后是否可以使用
     # 爬取7页，可自行修改
     for i in range(1, 11):
         print(f'正在抓取第{i}页……')
@@ -43,7 +42,9 @@ def send_request():
                 proxy = ip_ + ':' + port_  # 115.218.5.5:9000
                 all_ip_list.append(proxy)
                 # 开始检测获取到的ip是否可以使用
-                test_ip(proxy)
+                flag = test_ip(proxy)
+                if flag:
+                    usable_ip_list.append(proxy)
 
             else:
                 print('td len 0')
@@ -54,9 +55,10 @@ def send_request():
     print('分别有：\n', usable_ip_list)
 
     if len(usable_ip_list) > 0:
-        with open('../usable_ips.txt', 'w') as ip_file:
-            for ip in usable_ip_list:
-                ip_file.write(str(ip) + '\n')
+        with open('../usable_ips.txt', 'a') as ip_file:
+            ip_file.write(str(usable_ip_list))
+
+
 
 
 # 检测ip是否可以使用
@@ -64,18 +66,17 @@ def test_ip(proxy):
     # 构建代理ip
     proxies = {
         "http": "http://" + proxy
-        # "https": "https://" + proxy,
+        # "https": "https://" + proxy
         # "http": proxy,
         # "https": proxy,
     }
     try:
         response = requests.get(url='https://www.instagram.com/', headers={
             "User-Agent": "Mozilla/5.0 (X11; Linux armv8l; rv:78.0) Gecko/20100101 Firefox/78.0"}, proxies=proxies,
-                                timeout=5)  # 设置timeout，使响应等待1s
+                                timeout=10)  # 设置timeout，使响应等待1s
         response.close()
 
         if response.status_code == 200:
-            usable_ip_list.append(proxy)
             print(proxy, '\033[31m可用\033[0m')
             return True
         else:
@@ -90,22 +91,21 @@ def test_ip(proxy):
 
 def choice_usable_proxy():
     ip_lst = []
+    usable_ip = ''
     try:
         path = pathlib.Path('../usable_ips.txt')
         flag = path.exists()
-        if not flag:
-            send_request()
-            return random.choice(usable_ip_list)
-        else:
-            with open("../usable_ips.txt", 'r') as ip_file:
-                ip_lst.extend(ip_file.read().split('\n'))
+        if flag:
+            with open('../usable_ips.txt', 'r') as ip_file:
+                ip_lst = eval(ip_file.read())
 
-        while True:
-            ip = random.choice(ip_lst)
-            flag = test_ip(ip)
-            if flag:
-                usable_ip = ip
-                break
+            if len(ip_lst) > 0:
+                for _ in ip_lst:
+                    ip = random.choice(ip_lst)
+                    flag = test_ip(ip)
+                    if flag:
+                        usable_ip = ip
+                        break
 
         return usable_ip
 

@@ -3,7 +3,7 @@ import traceback
 import re
 import os
 import requests
-from .request import cutover_proxy,proxies
+from .request import RequestConfig as reqc,cutover_proxy
 from fake_useragent import UserAgent
 
 def request_header():
@@ -30,8 +30,7 @@ class Request:
         self.cookies = cookies
 
     def get_blog_page(self, url):
-        return requests.get(f'{url}/', headers=self.headers, cookies=self.cookies, verify=False, timeout=30
-                            , proxies=proxies)
+        return reqc.req_session().get(f'{url}/', headers=self.headers, cookies=self.cookies, verify=False, timeout=30)
 
 
 def access_blog_page(tag):
@@ -52,7 +51,7 @@ def access_blog_page(tag):
                 if count >= 20:
                     count = 0
                     print('累计请求20次,线程暂停60秒后,切换IP继续执行...')
-                    cutover_proxy()
+                    # cutover_proxy()
                     time.sleep(60)
 
                 resp = request.get_blog_page(blog_url)
@@ -140,9 +139,12 @@ def access_blog_page(tag):
                           resp.status_code, 'reason=', resp.reason)
 
             except requests.RequestException:
+                print("SSLException", traceback.print_exc())
+                print('切换新的ip,休眠60秒后执行....')
                 # 切换可用的新IP
                 cutover_proxy()
-                print("SSLException", traceback.print_exc())
+                time.sleep(60)
+
 
         print('user_blog_list:', user_blog_list)
         print('pic_url_hd_list',pic_url_hd_list)

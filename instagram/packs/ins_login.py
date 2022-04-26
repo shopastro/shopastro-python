@@ -2,8 +2,7 @@ import re
 import pickle
 from datetime import datetime
 from fake_useragent import UserAgent
-import requests
-from .request import proxies
+from .request import RequestConfig as reqc
 
 def request_header():
     headers = {
@@ -28,8 +27,8 @@ class Form:
 
     @Token
     def cookie(url="https://www.instagram.com/"):
-        resp = requests.get(f'{url}', headers={
-            "User-Agent": "Mozilla/5.0 (X11; Linux armv8l; rv:78.0) Gecko/20100101 Firefox/78.0"},proxies= proxies, verify=False)
+        resp = reqc.req_session().get(f'{url}', headers={
+            "User-Agent": "Mozilla/5.0 (X11; Linux armv8l; rv:78.0) Gecko/20100101 Firefox/78.0"}, verify=False)
         print('get_cookie_resp',resp.content)
         cookies = dict(resp.cookies)
 
@@ -82,8 +81,8 @@ class post(Form):
     @property
     def login(self):
 
-        resp = requests.post("https://www.instagram.com/accounts/login/ajax/",
-                            headers=self.headers(), data=self.data,verify=False,proxies=proxies)
+        resp = reqc.req_session().post("https://www.instagram.com/accounts/login/ajax/",
+                            headers=self.headers(), data=self.data,verify=False)
         return (
             {
                 'auth': resp.json().get('authenticated'),
