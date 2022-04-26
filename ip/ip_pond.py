@@ -81,6 +81,7 @@ def test_ip(proxy):
             print(proxy, '不可用')
             return False
     except Exception as e:
+        print(e)
         print(proxy, '请求异常')
 
 
