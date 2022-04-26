@@ -63,7 +63,7 @@ def test_ip(proxy):
     # 构建代理ip
     proxies = {
         "http": "http://" + proxy,
-        #"https": "https://" + proxy,
+        # "https": "https://" + proxy,
         # "http": proxy,
         # "https": proxy,
     }
@@ -77,6 +77,7 @@ def test_ip(proxy):
             print(proxy, '\033[31m可用\033[0m')
             return True
         else:
+            print('response', response.status_code)
             print(proxy, '不可用')
             return False
     except Exception as e:
@@ -92,7 +93,7 @@ def proxy_list():
             send_request()
             return usable_ip_list
         else:
-            with open("../usable_ips.txt",'r') as ip_file:
+            with open("../usable_ips.txt", 'r') as ip_file:
                 ip_lst.extend(ip_file.read().split('\n'))
         return ip_lst
 
