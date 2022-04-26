@@ -1,9 +1,9 @@
 import time
-import requests
 import traceback
 import re
 import os
-from .request import RequestConfig as req,cutover_proxy
+import requests
+from .request import cutover_proxy,proxies
 from fake_useragent import UserAgent
 
 def request_header():
@@ -30,7 +30,8 @@ class Request:
         self.cookies = cookies
 
     def get_blog_page(self, url):
-        return req.req_session().get(f'{url}/', headers=self.headers, cookies=self.cookies, verify=False, timeout=30)
+        return requests.get(f'{url}/', headers=self.headers, cookies=self.cookies, verify=False, timeout=30
+                            , proxies=proxies)
 
 
 def access_blog_page(tag):

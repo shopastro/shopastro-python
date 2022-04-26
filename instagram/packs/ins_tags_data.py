@@ -3,7 +3,9 @@ import traceback
 import time
 import os
 from fake_useragent import UserAgent
-from .request import RequestConfig as req,cutover_proxy
+from .request import cutover_proxy, proxies
+import requests
+
 
 class Form:
 
@@ -39,13 +41,12 @@ class Request:
         self.headers = headers
         self.cookies = cookies
 
-
-    def get_sections(self,form):
-        return req.req_session().post(f'https://i.instagram.com/api/v1/tags/{self.tag}/sections/', headers=self.headers,
-                                     data=form.data, cookies=self.cookies, timeout=30)
+    def get_sections(self, form):
+        return requests.post(f'https://i.instagram.com/api/v1/tags/{self.tag}/sections/', headers=self.headers,
+                             data=form.data, cookies=self.cookies, proxies=proxies, timeout=30)
 
     def get_tag_page(self, url):
-        return req.req_session().get(f'{url}' + self.tag + '/', headers=self.headers, cookies=self.cookies)
+        return requests.get(f'{url}' + self.tag + '/', headers=self.headers, cookies=self.cookies, proxies=proxies)
 
 
 def request_header():
@@ -62,9 +63,6 @@ def request_header():
     }
 
     return headers
-
-
-
 
 
 def get_cookie():
@@ -103,21 +101,19 @@ def access_tag_page(tag, url="https://www.instagram.com/explore/tags/"):
             # print('程序休眠', str(random_second) + 's')
             # time.sleep(random_second)
 
-            form = Form(max_id=next_max_id, page=next_page,media_ids=next_media_ids)
-            result = cycle_get_section_data(request,form)
+            form = Form(max_id=next_max_id, page=next_page, media_ids=next_media_ids)
+            result = cycle_get_section_data(request, form)
             '''
             请求计数:
                 访问10次接口 等待30秒
             '''
-            count +=1
-            if count>=20:
-                #访问10次接口,停30秒
+            count += 1
+            if count >= 20:
+                # 访问10次接口,停30秒
                 count = 0
                 print('累计请求20次,线程暂停60秒后,切换IP继续执行...')
-                cutover_proxy() # 切换新的ip爬取数据
+                cutover_proxy()  # 切换新的ip爬取数据
                 time.sleep(60)
-
-
 
             if 'data' in result:
                 section_data = result.get('data')
@@ -139,7 +135,7 @@ def access_tag_page(tag, url="https://www.instagram.com/explore/tags/"):
         # 循环结束,把获取到的所有blog_url 保存到 {$tag}-blog-url-{$datatime}.txt
         data_time = time.strftime("%Y-%m-%d", time.localtime())
         write_path = os.path.expandvars('$HOME') + '/tmp'
-        with open('{0}/{1}-blog-url-{2}.txt'.format(write_path,tag, data_time), 'w') as blog_url_file:
+        with open('{0}/{1}-blog-url-{2}.txt'.format(write_path, tag, data_time), 'w') as blog_url_file:
             blog_url_file.write(str(all_blog_url_list))
 
         # url保存成功后,返回数据,执行访问blog页面流程
@@ -163,7 +159,7 @@ def access_tag_page(tag, url="https://www.instagram.com/explore/tags/"):
         })
 
 
-def cycle_get_section_data(request,form):
+def cycle_get_section_data(request, form):
     try:
 
         req_section = request.get_sections(form)
@@ -200,10 +196,11 @@ def cycle_get_section_data(request,form):
                 'text': req_section.text
             })
     except:
-        print('ssl exception:',traceback.print_exc())
-        #切换可用的新IP
+        print('ssl exception:', traceback.print_exc())
+        # 切换可用的新IP
         cutover_proxy()
         return dict({})
+
 
 def resolve_section_data(sections):
     blog_url_list = []

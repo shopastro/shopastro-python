@@ -7,6 +7,7 @@ from lxml import etree
 from fake_useragent import UserAgent
 import time
 
+
 # 简单的反爬，设置一个请求头来伪装成浏览器
 def request_header():
     headers = {
@@ -72,8 +73,6 @@ def test_ip(proxy):
             "User-Agent": "Mozilla/5.0 (X11; Linux armv8l; rv:78.0) Gecko/20100101 Firefox/78.0"}, proxies=proxies,
                                 timeout=5)  # 设置timeout，使响应等待1s
         response.close()
-        # 休眠2秒后继续验证
-        time.sleep(2)
 
         if response.status_code == 200:
             usable_ip_list.append(proxy)
@@ -89,22 +88,30 @@ def test_ip(proxy):
         print(proxy, '请求异常')
 
 
-def proxy_list():
+def choice_usable_proxy():
     ip_lst = []
     try:
         path = pathlib.Path('../usable_ips.txt')
         flag = path.exists()
         if not flag:
             send_request()
-            return usable_ip_list
+            return random.choice(usable_ip_list)
         else:
             with open("../usable_ips.txt", 'r') as ip_file:
                 ip_lst.extend(ip_file.read().split('\n'))
-        return ip_lst
+
+        while True:
+            ip = random.choice(ip_lst)
+            flag = test_ip(ip)
+            if flag:
+                usable_ip = ip
+                break
+
+        return usable_ip
 
     except Exception:
         print('file read Exception', traceback.print_exc())
 
 
 if __name__ == '__main__':
-    print(random.choice(proxy_list()))
+    print(choice_usable_proxy())
