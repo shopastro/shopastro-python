@@ -5,7 +5,7 @@ import traceback
 import requests  # 导入模块
 from lxml import etree
 from fake_useragent import UserAgent
-
+import time
 
 # 简单的反爬，设置一个请求头来伪装成浏览器
 def request_header():
@@ -62,7 +62,7 @@ def send_request():
 def test_ip(proxy):
     # 构建代理ip
     proxies = {
-        "http": "http://" + proxy,
+        "http": "http://" + proxy
         # "https": "https://" + proxy,
         # "http": proxy,
         # "https": proxy,
@@ -80,6 +80,8 @@ def test_ip(proxy):
             print('response', response.status_code)
             print(proxy, '不可用')
             return False
+        # 休眠2秒后继续验证
+        time.sleep(2)
     except Exception as e:
         print(e)
         print(proxy, '请求异常')
