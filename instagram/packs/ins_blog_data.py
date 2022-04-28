@@ -50,14 +50,8 @@ def access_blog_page(tag):
         request = Request(request_header(), dict(eval(get_cookie())))
         count = 0
         for blog_url in eval(blog_url_lst):
-            try:
-                count += 1
-                if count >= 20:
-                    count = 0
-                    print('累计请求20次,线程暂停100秒后,切换IP继续执行...')
-                    # cutover_proxy()
-                    time.sleep(100)
 
+            try:
                 resp = request.get_blog_page(blog_url)
                 if resp.status_code == 200 and resp.url == blog_url + '/':
 
@@ -157,8 +151,18 @@ def access_blog_page(tag):
                 cutover_proxy()
                 time.sleep(60)
 
+            count += 1
+            if count >= 20:
+                count = 0
+                print('累计请求20次,线程暂停100秒后,切换IP继续执行...')
+                # cutover_proxy()
+                time.sleep(100)
+            else:
+                pass
+
         print('user_blog_list', user_blog_list)
         print('pic_url_hd_list', pic_url_hd_list)
+
 
         if len(user_blog_list) > 0:
             # 循环列表写入数据到文件中

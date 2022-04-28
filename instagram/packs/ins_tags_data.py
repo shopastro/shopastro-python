@@ -112,8 +112,26 @@ def access_tag_page(tag, url="https://www.instagram.com/explore/tags/"):
 
             form = Form(max_id=next_max_id, page=next_page, media_ids=next_media_ids)
             result = cycle_get_section_data(request, form)
+            try:
+
+                if 'data' in result:
+                    section_data = result.get('data')
+                    next_max_id = section_data.get('next_max_id')
+                    next_page = section_data.get('next_page')
+                    next_media_ids = str(list(map(int, section_data.get('next_media_ids'))))
+                    blog_url_list = section_data.get('blog_url_list')
+                    sections = section_data.get('sections')
+                    all_blog_url_list.extend(blog_url_list)
+                    print(all_blog_url_list)
+                    if sections == []:  # sections 为[] 代表翻页到底了
+                        break
+                else:
+                    print(all_blog_url_list)
+            except Exception:
+                print('exception', traceback.print_exc())
+                break
             '''
-            请求计数:
+                请求计数:
                 访问10次接口 等待30秒
             '''
             count += 1
@@ -123,24 +141,8 @@ def access_tag_page(tag, url="https://www.instagram.com/explore/tags/"):
                 print('累计请求20次,线程暂停100秒后,切换IP继续执行...')
                 cutover_proxy()  # 切换新的ip爬取数据
                 time.sleep(100)
-
-                try:
-                    if 'data' in result:
-                        section_data = result.get('data')
-                        next_max_id = section_data.get('next_max_id')
-                        next_page = section_data.get('next_page')
-                        next_media_ids = str(list(map(int, section_data.get('next_media_ids'))))
-                        blog_url_list = section_data.get('blog_url_list')
-                        sections = section_data.get('sections')
-                        all_blog_url_list.extend(blog_url_list)
-                        print(all_blog_url_list)
-                        if sections == []:  # sections 为[] 代表翻页到底了
-                            break
-                    else:
-                        print(all_blog_url_list)
-                except Exception:
-                    print('exception', traceback.print_exc())
-                    break
+            else:
+                pass
 
         else:
             print('循环获取section data 结束.....')
