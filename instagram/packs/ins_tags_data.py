@@ -5,7 +5,7 @@ import time
 import os
 
 import requests
-import ins_account as Account
+from .ins_account import update_account_status
 from fake_useragent import UserAgent
 from .request import RequestConfig as reqc, cutover_proxy
 from lxml import etree
@@ -198,7 +198,7 @@ def cycle_get_section_data(request, form, elseif=None):
                 # 账户被检测到机器人行为,修改当前账户状态,并更换新的账户爬取
                 if result_json.get("lock") == True and result_json.get("status") == "fail":
                     print('账户被检测到有状态异常,正在切换至新的账户...休眠60秒后执行')
-                    Account.update_account_status("sleep")
+                    update_account_status("sleep")
                     # 校验并重新登录新的账号进行操作
                     login_and_check()
                     time.sleep(60)

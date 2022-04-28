@@ -5,7 +5,7 @@ from datetime import datetime
 import requests
 from fake_useragent import UserAgent
 
-import ins_account as Account
+from .ins_account import get_valid_account,update_account_status
 from .request import RequestConfig as reqc
 
 
@@ -104,7 +104,7 @@ class LoginRequest(Form):
 
 def login_and_check():
     while True:
-        account = Account.get_valid_account()
+        account = get_valid_account()
         for i in range(4):
             login_request = LoginRequest(account)
             try:
@@ -122,7 +122,7 @@ def login_and_check():
 
         else:
             print('3次登录失败,正在切换可用的账号,进行重新登录...')
-            Account.update_account_status('sleep')
+            update_account_status('sleep')
 
 
 if __name__ == '__main__':
