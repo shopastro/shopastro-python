@@ -1,10 +1,9 @@
 import requests
-import packs.ins_login as login
+from packs.ins_login import login_and_check
 import packs.ins_tags_data as tags
 import packs.ins_blog_data as blog
 import socket
 import time
-from packs.request import cutover_proxy
 
 
 def get_host_ip():
@@ -46,54 +45,18 @@ def upload_s3_and_update(domain_host, domain, data_base, data_type, biz_date):
     return result
 
 
-def user_login(user_name, pass_word):
-    # 循环3次,三次登录都失败,结束流程
-    login_result = ''
-
-    for count in range(1, 4):
-        print('正在登录,请稍后...')
-        try:
-            post_init = login.post(user_name, pass_word)
-            post_init.login
-            login_result = post_init.check_auth()
-            print(login_result)
-        except requests.RequestException:
-            print('登录超时,正在切换可以ip资源...')
-            cutover_proxy()
-            continue
-
-
-        if login_result == 'Logged in Successfully':
-            return True
-            break
-        else:
-            print('登录失败', count, '次', '5秒后重新登录...')
-            time.sleep(5)
+def tori_data(hash_tag):
+    print('开始爬取hashTag数据...')
+    tag_result = tags.access_tag_page(hash_tag)
+    if 'data' in tag_result:
+        print('开始爬取博主数据...')
+        blog.access_blog_page(hash_tag)
     else:
-        print('3次登录失败,请检查账号是否异常/更换账号....')
-        return False
-
-
-def tori_data(login_status, hash_tag):
-    # 判断是否登录成功
-    if login_status is True:
-        tag_result = tags.access_tag_page(hash_tag)
-        if 'data' in tag_result:
-            blog.access_blog_page(hash_tag)
-        else:
-            print('tag=', hash_tag, '抓取tag数据失败......')
-    else:
-        pass
+        print('tag=', hash_tag, '抓取tag数据失败......')
 
 
 if __name__ == '__main__':
 
-    user_name = input('请输入账号:\n')
-    pass_word = input('请输入密码:\n')
-
-    if user_name is not None and pass_word is not None:
-        print('user_name', user_name)
-        print('pass_word', pass_word)
         while True:
             host_ip = get_host_ip()
             domain_host = 'http://' + host_ip + ':48888';
@@ -117,11 +80,8 @@ if __name__ == '__main__':
                     print("LocalFile [%s]Exists Then UploadToS3\n", result.text)
                     upload_s3_and_update(domain_host, domain, data_base, data_type, biz_date)
                 else:
-                    login_status = user_login(user_name, pass_word)
-                    if login_status:
-                        tori_data(login_status, domain)
-                    else:
-                        break
+                    login_and_check()
+                    tori_data(domain)
 
                     upload_s3_and_update(domain_host, domain, data_base, data_type, biz_date)
 
@@ -130,5 +90,3 @@ if __name__ == '__main__':
             else:
                 print("DomainParameterError Sleep20Seconds")
                 time.sleep(20)
-    else:
-        print('账号密码为空,请重新执行脚本.....')

@@ -1,9 +1,15 @@
+import json
 import re
 import traceback
 import time
 import os
+
+import requests
+import ins_account as Account
 from fake_useragent import UserAgent
 from .request import RequestConfig as reqc, cutover_proxy
+from lxml import etree
+from .ins_login import login_and_check
 
 
 class Form:
@@ -47,6 +53,9 @@ class Request:
 
     def get_tag_page(self, url):
         return reqc.req_session().get(f'{url}' + self.tag + '/', headers=self.headers, cookies=self.cookies)
+
+    def get_checkpoint_url(self, url):
+        return reqc.req_session().get(f'{url}', headers=self.headers, cookies=self.cookies)
 
 
 def request_header():
@@ -111,9 +120,9 @@ def access_tag_page(tag, url="https://www.instagram.com/explore/tags/"):
             if count >= 20:
                 # 访问10次接口,停30秒
                 count = 0
-                print('累计请求20次,线程暂停60秒后,切换IP继续执行...')
+                print('累计请求20次,线程暂停100秒后,切换IP继续执行...')
                 cutover_proxy()  # 切换新的ip爬取数据
-                time.sleep(60)
+                time.sleep(100)
 
                 try:
                     if 'data' in result:
@@ -127,8 +136,6 @@ def access_tag_page(tag, url="https://www.instagram.com/explore/tags/"):
                         print(all_blog_url_list)
                         if sections == []:  # sections 为[] 代表翻页到底了
                             break
-                    else:
-                        print(result)
                 except Exception:
                     print('exception', traceback.print_exc())
                     break
@@ -163,45 +170,65 @@ def access_tag_page(tag, url="https://www.instagram.com/explore/tags/"):
         })
 
 
-def cycle_get_section_data(request, form):
+def cycle_get_section_data(request, form, elseif=None):
     try:
 
         req_section = request.get_sections(form)
+
         if req_section.status_code == 200:
-            try:
-                dict_json = req_section.json()
-                sections = dict_json.get('sections')
-                data = dict({
-                    'next_max_id': dict_json.get('next_max_id'),
-                    'next_page': dict_json.get('next_page'),
-                    'next_media_ids': dict_json.get('next_media_ids'),
-                    'blog_url_list': resolve_section_data(sections),
-                    'sections': sections
-                })
+            dict_json = req_section.json()
+            sections = dict_json.get('sections')
+            data = dict({
+                'next_max_id': dict_json.get('next_max_id'),
+                'next_page': dict_json.get('next_page'),
+                'next_media_ids': dict_json.get('next_media_ids'),
+                'blog_url_list': resolve_section_data(sections),
+                'sections': sections
+            })
 
-                return dict({
-                    'status': req_section.status_code,
-                    'reason': req_section.reason,
-                    'text': req_section.text,
-                    'data': data
-                })
-
-
-            except:
-                print('json parse exception:', traceback.print_exc())
-                print('切换新的ip,休眠60秒后执行....')
-                # 切换可用的新IP
-                cutover_proxy()
-                time.sleep(60)
-                return dict({})
-
+            return dict({
+                'status': req_section.status_code,
+                'reason': req_section.reason,
+                'text': req_section.text,
+                'data': data
+            })
         else:
+            if "https://i.instagram.com/challenge/?next=" in req_section.text:
+                result_json = json.loads(req_section.text)
+                # 账户被检测到机器人行为,修改当前账户状态,并更换新的账户爬取
+                if result_json.get("lock") == True and result_json.get("status") == "fail":
+                    print('账户被检测到有状态异常,正在切换至新的账户...休眠60秒后执行')
+                    Account.update_account_status("sleep")
+                    # 校验并重新登录新的账号进行操作
+                    login_and_check()
+                    time.sleep(60)
+
+            elif req_section.status_code == 429:
+                print('请求过于频繁,切换ip和账号并在10分钟后,重新爬取...')
+                login_and_check()
+                cutover_proxy()
+                time.sleep(600)
+
+
             return dict({
                 'status': req_section.status_code,
                 'reason': req_section.reason,
                 'text': req_section.text
             })
-    except:
+
+    except json.JSONDecodeError:
+        # 获取response中的html元素信息,判断当前页面是否重定向到登录页
+        html_text = req_section.text.encode('utf-8')
+        html = etree.HTML(html_text)
+        html_result = html.xpath('/html[contains(@class,"logged-in")]')
+        if html_result:
+            # 校验并重新登录新的账号进行操作
+            print('切换新的账号,休眠60秒后执行....')
+            login_and_check()
+            time.sleep(60)
+        return dict({})
+
+    except requests.RequestException:
         print('ssl exception:', traceback.print_exc())
         print('切换新的ip,休眠60秒后执行....')
         # 切换可用的新IP

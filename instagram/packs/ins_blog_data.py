@@ -3,8 +3,12 @@ import traceback
 import re
 import os
 import requests
-from .request import RequestConfig as reqc,cutover_proxy
+import json
+from lxml import etree
+from .request import RequestConfig as reqc, cutover_proxy
 from fake_useragent import UserAgent
+from .ins_login import login_and_check
+
 
 def request_header():
     headers = {
@@ -40,7 +44,7 @@ def access_blog_page(tag):
     data_time = time.strftime("%Y-%m-%d", time.localtime())
     try:
         write_path = os.path.expandvars('$HOME') + '/tmp'
-        with open('{0}/{1}-blog-url-{2}.txt'.format(write_path,tag, data_time), 'r') as blog_file:
+        with open('{0}/{1}-blog-url-{2}.txt'.format(write_path, tag, data_time), 'r') as blog_file:
             blog_url_lst = blog_file.read()
 
         request = Request(request_header(), dict(eval(get_cookie())))
@@ -50,20 +54,20 @@ def access_blog_page(tag):
                 count += 1
                 if count >= 20:
                     count = 0
-                    print('累计请求20次,线程暂停60秒后,切换IP继续执行...')
+                    print('累计请求20次,线程暂停100秒后,切换IP继续执行...')
                     # cutover_proxy()
-                    time.sleep(60)
+                    time.sleep(100)
 
                 resp = request.get_blog_page(blog_url)
-                if resp.status_code == 200 and resp.url == blog_url+'/':
+                if resp.status_code == 200 and resp.url == blog_url + '/':
 
                     html = resp.text
                     user_blog_info = {}
-                    #设置hashTag
+                    # 设置hashTag
                     user_blog_info["hashTag"] = tag
 
-                    #设置HomePageName
-                    patter_home_page_name =  re.compile(r'"alternateName":"@(.*?)"')
+                    # 设置HomePageName
+                    patter_home_page_name = re.compile(r'"alternateName":"@(.*?)"')
                     home_page_name_data = re.findall(patter_home_page_name, html)
                     if len(home_page_name_data) > 0:
                         home_page_name = str(home_page_name_data[0])
@@ -126,18 +130,26 @@ def access_blog_page(tag):
                     # 获取用户高清照片信息
                     patter_pic_url_hd = re.compile(r'"profile_pic_url_hd":(.*?),"should_show_category"')
                     pic_url_hd_data = re.findall(patter_pic_url_hd, html)
-                    if len(pic_url_hd_data)>0:
+                    if len(pic_url_hd_data) > 0:
                         pic_url_hd = pic_url_hd_data[0]
-                        pic_url_hd = pic_url_hd.replace('\\u0026','&')
+                        pic_url_hd = pic_url_hd.replace('\\u0026', '&')
                         print('pic_url_hd', pic_url_hd)
                         pic_url_hd_list.append(pic_url_hd)
 
                     print('user_blog_info', user_blog_info)
                     user_blog_list.append(user_blog_info)
                 else:
-                    print('账户行为异常,请确认账户状态是否正常','tag=', tag,'blog_url=', blog_url, 'status_code=',
+                    print('账户行为异常,请确认账户状态是否正常', 'tag=', tag, 'blog_url=', blog_url, 'status_code=',
                           resp.status_code, 'reason=', resp.reason)
 
+            except json.JSONDecodeError:
+                # 获取response中的html元素信息,判断当前页面是否重定向到登录页
+                html_text = resp.text.encode('utf-8')
+                html = etree.HTML(html_text)
+                html_result = html.xpath('/html[contains(@class,"logged-in")]')
+                if html_result:
+                    # 校验并重新登录新的账号进行操作
+                    login_and_check()
             except requests.RequestException:
                 print("SSLException", traceback.print_exc())
                 print('切换新的ip,休眠60秒后执行....')
@@ -145,14 +157,13 @@ def access_blog_page(tag):
                 cutover_proxy()
                 time.sleep(60)
 
-
-        print('user_blog_list:', user_blog_list)
-        print('pic_url_hd_list',pic_url_hd_list)
+        print('user_blog_list', user_blog_list)
+        print('pic_url_hd_list', pic_url_hd_list)
 
         if len(user_blog_list) > 0:
             # 循环列表写入数据到文件中
-            write_path = os.path.expandvars('$HOME')+'/tmp'
-            with open('{0}/{1}-blog-{2}.json'.format(write_path,tag, data_time), 'a') as blog_file:
+            write_path = os.path.expandvars('$HOME') + '/tmp'
+            with open('{0}/{1}-blog-{2}.json'.format(write_path, tag, data_time), 'a') as blog_file:
                 for user_log in user_blog_list:
                     blog_file.write(str(user_log))
                     blog_file.write('\n')

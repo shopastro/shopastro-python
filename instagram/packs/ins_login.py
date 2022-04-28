@@ -1,14 +1,20 @@
 import re
 import pickle
 from datetime import datetime
+
+import requests
 from fake_useragent import UserAgent
+
+import ins_account as Account
 from .request import RequestConfig as reqc
+
 
 def request_header():
     headers = {
         'User-Agent': UserAgent().Chrome  # 谷歌浏览器
     }
     return headers
+
 
 class Token:
 
@@ -29,23 +35,22 @@ class Form:
     def cookie(url="https://www.instagram.com/"):
         resp = reqc.req_session().get(f'{url}', headers={
             "User-Agent": "Mozilla/5.0 (X11; Linux armv8l; rv:78.0) Gecko/20100101 Firefox/78.0"}, verify=False)
-        print('get_cookie_resp',resp.content)
+        print('get_cookie_resp', resp.content)
         cookies = dict(resp.cookies)
 
         return cookies
 
     @property
     def data(self):
-
         return (dict(
-                {
-                    'username': self.User,
-                    'enc_password': "#PWD_INSTAGRAM_BROWSER:0:%s:%s" % (int(datetime.now().timestamp()), self.Pass),
-                },
-                **pickle.loads(
-                    b'\x80\x03}q\x00(X\x0b\x00\x00\x00queryParamsq\x01X\x02\x00\x00\x00{}q\x02X\r\x00\x00\x00optIntoOneTapq\x03X\x05\x00\x00\x00falseq\x04X\x11\x00\x00\x00stopDeletionNonceq\x05X\x00\x00\x00\x00q\x06X\x14\x00\x00\x00trustedDeviceRecordsq\x07h\x02u.'
-                )
-            ))
+            {
+                'username': self.User,
+                'enc_password': "#PWD_INSTAGRAM_BROWSER:0:%s:%s" % (int(datetime.now().timestamp()), self.Pass),
+            },
+            **pickle.loads(
+                b'\x80\x03}q\x00(X\x0b\x00\x00\x00queryParamsq\x01X\x02\x00\x00\x00{}q\x02X\r\x00\x00\x00optIntoOneTapq\x03X\x05\x00\x00\x00falseq\x04X\x11\x00\x00\x00stopDeletionNonceq\x05X\x00\x00\x00\x00q\x06X\x14\x00\x00\x00trustedDeviceRecordsq\x07h\x02u.'
+            )
+        ))
 
     def __len__(self):
         return len(repr(self.data))
@@ -56,16 +61,13 @@ class Form:
     @property
     def items(self):
         cc = self.cookie()
-        print('cc',cc)
         return (cc['csrftoken'], re.sub("': '", "=", str(cc)[2:-2]).replace("', '", "; "))
 
 
-class post(Form):
+class LoginRequest(Form):
 
-    def __init__(self, User, Pass):
-        super(post, self).__init__(User, Pass)
-        self.user = User
-        self.Pass = Pass
+    def __init__(self, account_param):
+        super(LoginRequest, self).__init__(account_param["account"], account_param["password"])
 
     def headers(self):
         item = self.items
@@ -82,7 +84,7 @@ class post(Form):
     def login(self):
 
         resp = reqc.req_session().post("https://www.instagram.com/accounts/login/ajax/",
-                            headers=self.headers(), data=self.data,verify=False)
+                                       headers=self.headers(), data=self.data, verify=False,timeout=10)
         return (
             {
                 'auth': resp.json().get('authenticated'),
@@ -100,9 +102,28 @@ class post(Form):
             return "Incorrect password"
 
 
+def login_and_check():
+    while True:
+        account = Account.get_valid_account()
+        for i in range(4):
+            login_request = LoginRequest(account)
+            try:
+                login_request.login
+                login_result = login_request.check_auth()
+                print(login_result)
+                if login_result == "Logged in Successfully":
+                    return True
+                else:
+                    # 重试登录
+                    print('登录失败,正在进行第' + str(i + 1) + '次重试....')
+                    pass
+            except requests.RequestException:
+                print('连接超时,正在进行第' + str(i + 1) + '次重试....')
+
+        else:
+            print('3次登录失败,正在切换可用的账号,进行重新登录...')
+            Account.update_account_status('sleep')
+
+
 if __name__ == '__main__':
-    # @property将方法变为属性,调用方法的时候,不能携带()
-    post_init = post('mahjrzbhmv@iubridge.com', 'SWLarryOLLEH4321#$#')
-    post_init.login
-    result = post_init.check_auth()
-    print(result)
+   pass
