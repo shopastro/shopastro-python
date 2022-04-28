@@ -36,7 +36,7 @@ class Form:
         resp = reqc.req_session().get(f'{url}', headers={
             "User-Agent": "Mozilla/5.0 (X11; Linux armv8l; rv:78.0) Gecko/20100101 Firefox/78.0"}, verify=False)
         cookies = dict(resp.cookies)
-
+        print('cookies',cookies)
         return cookies
 
     @property
