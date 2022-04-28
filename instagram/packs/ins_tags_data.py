@@ -136,6 +136,8 @@ def access_tag_page(tag, url="https://www.instagram.com/explore/tags/"):
                         print(all_blog_url_list)
                         if sections == []:  # sections 为[] 代表翻页到底了
                             break
+                    else:
+                        print(all_blog_url_list)
                 except Exception:
                     print('exception', traceback.print_exc())
                     break
