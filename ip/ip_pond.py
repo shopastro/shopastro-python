@@ -116,7 +116,6 @@ ip_lst = []
 
 def choice_usable_proxy():
     global ip_lst
-    usable_ip = ''
     if not ip_lst:
 
         response = requests.get(
@@ -131,15 +130,19 @@ def choice_usable_proxy():
                 port = ip_data["port"]
                 usable_ip = str(ip) + ":" + str(port)
                 ip_lst.append(usable_ip)
-        
-    usable_ip = random.choice(ip_lst)
-    flag = test_ip(usable_ip)
-    if flag:
-        print("ip_list",ip_lst)
-        print("usable_ip",usable_ip)
-        return usable_ip
-    else:
-        ip_lst.remove(usable_ip)
+
+    while True:
+        if not ip_lst:
+            return ''
+
+        usable_ip = random.choice(ip_lst)
+        flag = test_ip(usable_ip)
+        if flag:
+            print("ip_list",ip_lst)
+            print("usable_ip",usable_ip)
+            return usable_ip
+        else:
+            ip_lst.remove(usable_ip)
 
 
 if __name__ == '__main__':
