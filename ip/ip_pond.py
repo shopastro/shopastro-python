@@ -128,11 +128,11 @@ def choice_usable_proxy():
             for ip_data in list_data:
                 ip = ip_data["ip"]
                 port = ip_data["port"]
-                usable_ip = ip + ":" + port
+                usable_ip = str(ip) + ":" + str(port)
                 ip_lst.append(usable_ip)
         else:
             print("json_data",json_data)
-
+        
     usable_ip = random.choice(ip_lst)
     flag = test_ip(usable_ip)
     if flag:
