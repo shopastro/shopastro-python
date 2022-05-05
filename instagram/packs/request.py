@@ -7,7 +7,8 @@ from ip.ip_pond import choice_usable_proxy
 
 init_proxy = choice_usable_proxy()
 proxies = {
-    "http": "http://" + init_proxy
+    "http": "http://" + init_proxy,
+    "https": "https://"+ init_proxy
 }
 
 
