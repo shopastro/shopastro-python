@@ -65,8 +65,8 @@ def get_kuaidaili_open_ip():
 def test_ip(proxy):
     # 构建代理ip
     proxies = {
-        "http": "http://" + proxy
-        # "https": "https://" + proxy
+        "http": "http://" + proxy,
+        "https": "https://" + proxy
         # "http": proxy,
         # "https": proxy,
     }
@@ -114,4 +114,4 @@ def choice_usable_proxy():
 
 
 if __name__ == '__main__':
-    print(choice_usable_proxy())
+    test_ip("3.93.195.111:4722")
