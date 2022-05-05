@@ -114,4 +114,5 @@ def choice_usable_proxy():
 
 
 if __name__ == '__main__':
-    test_ip("3.93.195.111:4722")
+    ip = input('输入要测试的ip: ')
+    test_ip(ip)
