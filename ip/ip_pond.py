@@ -66,14 +66,14 @@ def test_ip(proxy):
     # 构建代理ip
     proxies = {
         "http": "http://" + proxy,
-        "https": "https://" + proxy
+        #"https": "https://" + proxy
         # "http": proxy,
         # "https": proxy,
     }
     try:
         response = requests.get(url='https://www.instagram.com/', headers={
             "User-Agent": "Mozilla/5.0 (X11; Linux armv8l; rv:78.0) Gecko/20100101 Firefox/78.0"}, proxies=proxies,
-                                timeout=10)  # 设置timeout，使响应等待1s
+                                timeout=10,verify=False)  # 设置timeout，使响应等待1s
         response.close()
 
         if response.status_code == 200:
