@@ -9,6 +9,7 @@ from .request import RequestConfig as reqc, cutover_proxy
 from fake_useragent import UserAgent
 from .ins_login import login_and_check
 
+sleep_second = 120
 
 def request_header():
     headers = {
@@ -146,17 +147,17 @@ def access_blog_page(tag):
                     login_and_check()
             except requests.RequestException:
                 print("SSLException", traceback.print_exc())
-                print('切换新的ip,休眠60秒后执行....')
+                print('切换新的ip,休眠{0}秒后执行....'.format(sleep_second))
                 # 切换可用的新IP
                 cutover_proxy()
-                time.sleep(60)
+                time.sleep(sleep_second)
 
             count += 1
             if count >= 20:
                 count = 0
-                print('累计请求20次,线程暂停100秒后,切换IP继续执行...')
-                # cutover_proxy()
-                time.sleep(100)
+                print('累计请求20次,线程暂停{0}秒后,切换IP继续执行...'.format(sleep_second))
+                cutover_proxy()
+                time.sleep(sleep_second)
             else:
                 pass
 

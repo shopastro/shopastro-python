@@ -11,6 +11,7 @@ from .request import RequestConfig as reqc, cutover_proxy
 from lxml import etree
 from .ins_login import login_and_check
 
+sleep_second = 120
 
 class Form:
 
@@ -80,6 +81,7 @@ def get_cookie():
 
 
 def access_tag_page(tag, url="https://www.instagram.com/explore/tags/"):
+    global sleep_second
     headers = request_header()
     cookies = dict(eval(get_cookie()))
     headers['X-Csrftoken'] = cookies.get('csrftoken')
@@ -132,15 +134,15 @@ def access_tag_page(tag, url="https://www.instagram.com/explore/tags/"):
                 break
             '''
                 请求计数:
-                访问10次接口 等待30秒
+                访问20次接口 等待120秒
             '''
             count += 1
             if count >= 20:
                 # 访问10次接口,停30秒
                 count = 0
-                print('累计请求20次,线程暂停100秒后,切换IP继续执行...')
+                print('累计请求20次,线程暂停{0}秒后,切换IP继续执行...'.format(sleep_second))
                 cutover_proxy()  # 切换新的ip爬取数据
-                time.sleep(100)
+                time.sleep(sleep_second)
             else:
                 pass
 
@@ -174,7 +176,7 @@ def access_tag_page(tag, url="https://www.instagram.com/explore/tags/"):
         })
 
 
-def cycle_get_section_data(request, form, elseif=None):
+def cycle_get_section_data(request, form):
     try:
 
         req_section = request.get_sections(form)
@@ -201,11 +203,11 @@ def cycle_get_section_data(request, form, elseif=None):
                 result_json = json.loads(req_section.text)
                 # 账户被检测到机器人行为,修改当前账户状态,并更换新的账户爬取
                 if result_json.get("lock") == True and result_json.get("status") == "fail":
-                    print('账户被检测到有状态异常,正在切换至新的账户...休眠60秒后执行')
+                    print('账户被检测到有状态异常,正在切换至新的账户...休眠{0}秒后执行'.format(sleep_second))
                     update_account_status("sleep")
                     # 校验并重新登录新的账号进行操作
                     login_and_check()
-                    time.sleep(60)
+                    time.sleep(sleep_second)
 
             elif req_section.status_code == 429:
                 print('请求过于频繁,切换ip和账号并在10分钟后,重新爬取...')
@@ -227,17 +229,16 @@ def cycle_get_section_data(request, form, elseif=None):
         html_result = html.xpath('/html[contains(@class,"logged-in")]')
         if html_result:
             # 校验并重新登录新的账号进行操作
-            print('切换新的账号,休眠60秒后执行....')
+            print('正在切换新的账号.......')
             login_and_check()
-            time.sleep(60)
         return dict({})
 
     except requests.RequestException:
         print('ssl exception:', traceback.print_exc())
-        print('切换新的ip,休眠60秒后执行....')
+        print('切换新的ip,休眠{0}秒后执行....'.format(sleep_second))
         # 切换可用的新IP
         cutover_proxy()
-        time.sleep(60)
+        time.sleep(sleep_second)
         return dict({})
 
 

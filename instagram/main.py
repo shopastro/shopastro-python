@@ -46,7 +46,7 @@ def upload_s3_and_update(domain_host, domain, data_base, data_type, biz_date):
 
 
 def tori_data(hash_tag):
-    print('开始爬取hashTag数据...')
+    print('开始爬取{0}数据...'.format(hash_tag))
     tag_result = tags.access_tag_page(hash_tag)
     if 'data' in tag_result:
         print('开始爬取博主数据...')

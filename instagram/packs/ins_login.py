@@ -1,13 +1,16 @@
 import re
 import pickle
+import time
 from datetime import datetime
 
 import requests
 from fake_useragent import UserAgent
 
-from .ins_account import get_valid_account,update_account_status
+from .ins_account import get_valid_account, update_account_status
 from .request import RequestConfig as reqc
 
+
+sleep_time = 120
 
 def request_header():
     headers = {
@@ -36,7 +39,7 @@ class Form:
         resp = reqc.req_session().get(f'{url}', headers={
             "User-Agent": "Mozilla/5.0 (X11; Linux armv8l; rv:78.0) Gecko/20100101 Firefox/78.0"}, verify=False)
         cookies = dict(resp.cookies)
-        print('cookies',cookies)
+        print('cookies', cookies)
         return cookies
 
     @property
@@ -83,7 +86,7 @@ class LoginRequest(Form):
     def login(self):
 
         resp = reqc.req_session().post("https://www.instagram.com/accounts/login/ajax/",
-                                       headers=self.headers(), data=self.data, verify=False,timeout=10)
+                                       headers=self.headers(), data=self.data, verify=False, timeout=10)
         return (
             {
                 'auth': resp.json().get('authenticated'),
@@ -102,27 +105,30 @@ class LoginRequest(Form):
 
 
 def login_and_check():
+    global sleep_time
     while True:
         account = get_valid_account()
-        for i in range(4):
-            login_request = LoginRequest(account)
-            try:
+        try:
+            for i in range(4):
+                login_request = LoginRequest(account)
                 login_request.login
                 login_result = login_request.check_auth()
-                print(login_result)
                 if login_result == "Logged in Successfully":
+                    print(login_result, '登录成功.....等待{0}秒后执行爬取操作...'.format(sleep_time))
+                    time.sleep(sleep_time)
                     return True
                 else:
                     # 重试登录
                     print('登录失败,正在进行第' + str(i + 1) + '次重试....')
                     pass
-            except requests.RequestException:
-                print('连接超时,正在进行第' + str(i + 1) + '次重试....')
 
-        else:
-            print('3次登录失败,正在切换可用的账号,进行重新登录...')
-            update_account_status('sleep')
+            else:
+                print('3次登录失败,正在切换可用的账号,进行重新登录...')
+                update_account_status('sleep')
+
+        except requests.RequestException:
+            print('连接超时,正在进行重新链接....')
 
 
 if __name__ == '__main__':
-   pass
+    pass
