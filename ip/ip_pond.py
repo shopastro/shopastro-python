@@ -123,6 +123,7 @@ def choice_usable_proxy():
             url="http://api.proxy.ipidea.io/getProxyIp?num=100&return_type=json&lb=1&sb=0&flow=1&regions=us&protocol"
                 "=http")
         json_data = json.loads(response.text)
+        print("json_data", json_data)
         if json_data["success"]:
             list_data = json_data["data"]
             for ip_data in list_data:
@@ -130,8 +131,6 @@ def choice_usable_proxy():
                 port = ip_data["port"]
                 usable_ip = str(ip) + ":" + str(port)
                 ip_lst.append(usable_ip)
-        else:
-            print("json_data",json_data)
         
     usable_ip = random.choice(ip_lst)
     flag = test_ip(usable_ip)
