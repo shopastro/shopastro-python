@@ -4,7 +4,7 @@ import traceback
 import requests  # 导入模块
 from lxml import etree
 from fake_useragent import UserAgent
-import time
+import json
 
 
 # 简单的反爬，设置一个请求头来伪装成浏览器
@@ -59,21 +59,19 @@ def get_kuaidaili_open_ip():
             ip_file.write(str(usable_ip_list))
 
 
-
-
 # 检测ip是否可以使用
 def test_ip(proxy):
     # 构建代理ip
     proxies = {
         "http": "http://" + proxy,
-        #"https": "https://" + proxy
+        # "https": "https://" + proxy
         # "http": proxy,
         # "https": proxy,
     }
     try:
         response = requests.get(url='https://www.instagram.com/', headers={
             "User-Agent": "Mozilla/5.0 (X11; Linux armv8l; rv:78.0) Gecko/20100101 Firefox/78.0"}, proxies=proxies,
-                                timeout=10,verify=False)  # 设置timeout，使响应等待1s
+                                timeout=10, verify=False)  # 设置timeout，使响应等待1s
         response.close()
 
         if response.status_code == 200:
@@ -89,30 +87,59 @@ def test_ip(proxy):
         print(proxy, '请求异常')
 
 
+# def choice_usable_proxy():
+#     global ip_lst
+#     usable_ip = ''
+#     try:
+#         path = pathlib.Path('../usable_ips.txt')
+#         flag = path.exists()
+#         if flag:
+#             with open('../usable_ips.txt', 'r') as ip_file:
+#                 ip_lst = eval(ip_file.read())
+#
+#             if len(ip_lst) > 0:
+#                 for _ in ip_lst:
+#                     ip = random.choice(ip_lst)
+#                     flag = test_ip(ip)
+#                     if flag:
+#                         usable_ip = ip
+#                         break
+#
+#         return usable_ip
+#
+#     except Exception:
+#         print('file read Exception', traceback.print_exc())
+#
+
+ip_lst = []
+
+
 def choice_usable_proxy():
-    ip_lst = []
+    global ip_lst
     usable_ip = ''
-    try:
-        path = pathlib.Path('../usable_ips.txt')
-        flag = path.exists()
-        if flag:
-            with open('../usable_ips.txt', 'r') as ip_file:
-                ip_lst = eval(ip_file.read())
+    if not ip_lst:
 
-            if len(ip_lst) > 0:
-                for _ in ip_lst:
-                    ip = random.choice(ip_lst)
-                    flag = test_ip(ip)
-                    if flag:
-                        usable_ip = ip
-                        break
+        response = requests.get(
+            url="http://api.proxy.ipidea.io/getProxyIp?num=100&return_type=json&lb=1&sb=0&flow=1&regions=us&protocol"
+                "=http")
+        json_data = json.loads(response.text)
+        if json_data["success"]:
+            list_data = json_data["data"]
+            for ip_data in list_data:
+                ip = ip_data["ip"]
+                port = ip_data["port"]
+                usable_ip = ip + ":" + port
+                ip_lst.append(usable_ip)
 
+    usable_ip = random.choice(ip_lst)
+    flag = test_ip(usable_ip)
+    if flag:
         return usable_ip
-
-    except Exception:
-        print('file read Exception', traceback.print_exc())
+    else:
+        ip_lst.remove(usable_ip)
 
 
 if __name__ == '__main__':
-    ip = input('输入要测试的ip: ')
-    test_ip(ip)
+    # ip = input('输入要测试的ip: ')
+    # test_ip(ip)
+    choice_usable_proxy()
